@@ -1,0 +1,9 @@
+name: wSurvivalGames
+main: me.wolf.wsurvivalgames.SurvivalGamesPlugin
+version: 1.0.0
+description: Survival Games plugin
+author: ${project.author}
+api-version: 1.13
+
+
+

@@ -1,0 +1,6 @@
+join-npc-name: "&cClick To join!"
+min-items-per-chest: 1
+max-items-per-chest: 5
+tier-2-chest-chance: 20
+
+WorldSpawn:

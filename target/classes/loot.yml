@@ -1,0 +1,72 @@
+chest-items:
+  tier-1:
+    '1':
+      item: "IRON_SWORD"
+      amount: 1
+    '2':
+      item: "IRON_PICKAXE"
+      amount: 1
+    '3':
+      item: "IRON_HELMET"
+      amount: 1
+    '4':
+      item: "GOLDEN_LEGGINGS"
+      amount: 1
+    '5':
+      item: "LEATHER_CHESTPLATE"
+      amount: 1
+    '6':
+      item: "COOKED_BEEF"
+      amount: 8
+    '7':
+      item: "GOLDEN_APPLE"
+      amount: 1
+    '8':
+      item: "FISHING_ROD"
+      amount: 1
+    '9':
+      item: "CHAINMAIL_BOOTS"
+      amount: 1
+    '10':
+      item: "CHAINMAIL_LEGGINGS"
+      amount: 1
+    '11':
+      item: "WOODEN_SWORD"
+      amount: 1
+    '12':
+      item: "GOLDEN_HELMET"
+      amount: 1
+    '13':
+      item: "GOLDEN_BOOTS"
+      amount: 1
+    '14':
+      item: "GOLD_INGOT"
+      amount: 1
+    '15':
+      item: "STICK"
+      amount: 2
+    '16':
+      item: "IRON_INGOT"
+      amount: 1
+    '17':
+      item: "LEATHER_HELMET"
+      amount: 1
+    '18':
+      item: "GOLDEN_CHESTPLATE"
+      amount: 1
+    '19':
+      item: "APPLE"
+      amount: 2
+    '20':
+      item: "IRON_PICKAXE"
+      amount: 1
+  tier-2:
+    '1':
+      item: "DIAMOND_HELMET"
+      amount: 1
+    '2':
+      item: "DIAMOND_BOOTS"
+      amount: 1
+    '3':
+      item: "DIAMOND_SWORD"
+      amount: 1
