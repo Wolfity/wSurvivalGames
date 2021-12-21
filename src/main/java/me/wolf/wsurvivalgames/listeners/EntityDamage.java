@@ -21,9 +21,8 @@ public class EntityDamage implements Listener {
         if (!(event.getEntity() instanceof Player)) return;
         for (final Arena arena : plugin.getArenas()) {
             if (arena.getArenaMembers().contains(plugin.getSgPlayers().get(event.getEntity().getUniqueId()))) {
-                if (arena.getArenaState() != ArenaState.INGAME) {
-                    event.setCancelled(true);
-                }
+                System.out.println(arena.getArenaState());
+                event.setCancelled(arena.getArenaState() != ArenaState.INGAME);
             }
         }
     }

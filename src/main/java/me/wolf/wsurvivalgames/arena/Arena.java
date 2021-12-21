@@ -53,22 +53,8 @@ public class Arena {
         this.chestRefill = chestRefill;
         this.openedChests = new HashSet<>();
 
-        final FileConfiguration lootCfg = plugin.getFileManager().getLootConfig().getConfig();
-
-        // loading the tier 1 and 2 chest items
-        for (final String tiers : lootCfg.getConfigurationSection("chest-items").getKeys(false)) {
-            for (final String key : lootCfg.getConfigurationSection("chest-items." + tiers).getKeys(false)) {
-
-                final Material material = XMaterial.valueOf(lootCfg.getConfigurationSection("chest-items." + tiers + "." + key).getString(".item")).parseMaterial();
-                final int amount = lootCfg.getConfigurationSection("chest-items." + tiers + "." + key).getInt(".amount");
-                if (tiers.equalsIgnoreCase("tier-1")) {
-                    tier1ChestContents.put(material, amount);
-                } else if (tiers.equalsIgnoreCase("tier-2")) {
-                    tier2ChestContents.put(material, amount);
-                }
-            }
-        }
     }
+
 
 
     public void saveArena(final String arenaName) {

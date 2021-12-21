@@ -1,5 +1,6 @@
 me\wolf\wsurvivalgames\game\GameListeners.class
 me\wolf\wsurvivalgames\game\GameManager$5.class
+me\wolf\wsurvivalgames\killeffect\KillEffectManager.class
 me\wolf\wsurvivalgames\listeners\FoodChange.class
 me\wolf\wsurvivalgames\listeners\BlockBreak.class
 me\wolf\wsurvivalgames\listeners\EntityDamage.class
@@ -27,6 +28,7 @@ me\wolf\wsurvivalgames\game\GameManager$1.class
 me\wolf\wsurvivalgames\SurvivalGamesPlugin.class
 me\wolf\wsurvivalgames\game\GameManager$2.class
 me\wolf\wsurvivalgames\arena\ArenaManager.class
+me\wolf\wsurvivalgames\kits\KitManager.class
 me\wolf\wsurvivalgames\game\GameManager$7.class
 me\wolf\wsurvivalgames\utils\Utils.class
 me\wolf\wsurvivalgames\game\GameManager$4.class

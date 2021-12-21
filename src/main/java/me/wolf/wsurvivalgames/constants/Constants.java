@@ -81,11 +81,11 @@ public class Constants {
 
 
         public static final String GAME_STARTED = Utils.colorize(
-                "  &a===============================================================" +
+                "  &a===================================================" +
                         "&a=                        &a&lGame Started! \n" +
                         "&a=            Loot chests and kill enemies, be the last one alive!\n" +
                         "&a=                          &2Good luck!\n" +
-                        "&a===============================================================");
+                        "&a===================================================");
 
         public static final String GAME_WILL_START_SOON = Utils.colorize(
                 "&aYou have been teleported to your spawn cages, the game will start soon!");

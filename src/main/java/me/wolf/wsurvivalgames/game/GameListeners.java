@@ -156,23 +156,25 @@ public class GameListeners implements Listener {
 
         final Player player = (Player) event.getWhoClicked();
         final ItemStack clicked = event.getCurrentItem();
+        final SGPlayer sgPlayer = plugin.getSgPlayers().get(player.getUniqueId());
+        if(sgPlayer == null) return;
         if (event.getView().getTitle().equalsIgnoreCase(Utils.colorize("&bKit Selector"))) {
-            plugin.getSgPlayers().get(player.getUniqueId()).getKitList().forEach(kit -> {
-                final ItemStack icon = Utils.createItem(kit.getIcon(), kit.getDisplay(), 1);
-                kit.setActive(clicked.equals(icon));
-            });
 
-            plugin.getSgPlayers().get(player.getUniqueId()).getKitList().stream().filter(Kit::isActive).forEach(
-                    kit -> player.sendMessage(Constants.Messages.KIT_SELECTED.replace("{kit}", kit.getName())));
+            plugin.getKitManager().getKits().forEach(kit -> {
+                if(event.getCurrentItem().getType().equals(kit.getIcon())) {
+                    sgPlayer.setKit(kit);
+                    player.sendMessage(Constants.Messages.KIT_SELECTED.replace("{kit}", kit.getName()));
+                }
+            });
 
             event.setCancelled(true);
         } else if (event.getView().getTitle().equalsIgnoreCase(Utils.colorize("&bKill Effect Selector"))) {
-            plugin.getSgPlayers().get(player.getUniqueId()).getKillEffectsList().forEach(killEffect -> {
-                final ItemStack icon = Utils.createItem(killEffect.getIcon(), killEffect.getName(), 1);
-                killEffect.setActive(clicked.equals(icon));
+            plugin.getKillEffectManager().getKillEffectSet().forEach(killEffect -> {
+                if(event.getCurrentItem().getType().equals(killEffect.getIcon())) {
+                    sgPlayer.setKillEffect(killEffect);
+                    player.sendMessage(Constants.Messages.KILLEFFECT_SELECTED.replace("{killeffect}", killEffect.getName()));
+                }
             });
-            plugin.getSgPlayers().get(player.getUniqueId()).getKillEffectsList().stream().filter(KillEffect::isActive).forEach(
-                    killEffect -> player.sendMessage(Constants.Messages.KILLEFFECT_SELECTED.replace("{killeffect}", killEffect.getName())));
 
             event.setCancelled(true);
         }
@@ -216,7 +218,9 @@ public class GameListeners implements Listener {
     // applies the selected killeffect after the killer killed a player
     private void applyKillEffect(final Player killer) {
         final SGPlayer sgPlayer = plugin.getSgPlayers().get(killer.getUniqueId());
-        sgPlayer.getKillEffectsList().stream().filter(KillEffect::isActive).forEach(killEffect -> killer.addPotionEffect(killEffect.getPotionEffect()));
+        if(sgPlayer.getKillEffect() == null) return;
+        killer.addPotionEffect(sgPlayer.getKillEffect().getPotionEffect());
+
     }
 
     // checking if the last player is alive

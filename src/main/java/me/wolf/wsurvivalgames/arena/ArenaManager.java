@@ -1,13 +1,12 @@
 package me.wolf.wsurvivalgames.arena;
 
+import com.cryptomorin.xseries.XMaterial;
 import lombok.Getter;
 import me.wolf.wsurvivalgames.SurvivalGamesPlugin;
 import me.wolf.wsurvivalgames.player.SGPlayer;
 import me.wolf.wsurvivalgames.utils.CustomLocation;
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.World;
-import org.bukkit.WorldCreator;
+import org.bukkit.*;
+import org.bukkit.configuration.file.FileConfiguration;
 
 import java.io.File;
 import java.util.Objects;
@@ -42,6 +41,23 @@ public final class ArenaManager {
         arenaWorld.setAutoSave(false);
         plugin.getArenas().add(arena);
         return arena;
+    }
+
+    public void loadLoot(final Arena arena) {
+        final FileConfiguration lootCfg = plugin.getFileManager().getLootConfig().getConfig();
+        // loading the tier 1 and 2 chest items
+        for (final String tiers : lootCfg.getConfigurationSection("chest-items").getKeys(false)) {
+            for (final String key : lootCfg.getConfigurationSection("chest-items." + tiers).getKeys(false)) {
+
+                final Material material = XMaterial.valueOf(lootCfg.getConfigurationSection("chest-items." + tiers + "." + key).getString(".item")).parseMaterial();
+                final int amount = lootCfg.getConfigurationSection("chest-items." + tiers + "." + key).getInt(".amount");
+                if (tiers.equalsIgnoreCase("tier-1")) {
+                    arena.getTier1ChestContents().put(material, amount);
+                } else if (tiers.equalsIgnoreCase("tier-2")) {
+                    arena.getTier2ChestContents().put(material, amount);
+                }
+            }
+        }
     }
 
 

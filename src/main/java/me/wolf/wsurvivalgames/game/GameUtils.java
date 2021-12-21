@@ -4,6 +4,7 @@ import com.cryptomorin.xseries.XMaterial;
 import me.wolf.wsurvivalgames.SurvivalGamesPlugin;
 import me.wolf.wsurvivalgames.killeffect.KillEffect;
 import me.wolf.wsurvivalgames.kits.Kit;
+import me.wolf.wsurvivalgames.player.SGPlayer;
 import me.wolf.wsurvivalgames.utils.Utils;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -31,7 +32,7 @@ public class GameUtils {
     public void openKitSelector(final Player player) {
         final Inventory menu = Bukkit.createInventory(null, 27, Utils.colorize("&bKit Selector"));
         if (plugin.getSgPlayers().containsKey(player.getUniqueId())) {
-            plugin.getSgPlayers().get(player.getUniqueId()).getKitList().forEach(kit -> {
+            plugin.getKitManager().getKits().forEach(kit -> {
                 final ItemStack icon = Utils.createItem(kit.getIcon(), Utils.colorize(kit.getDisplay()), 1);
                 menu.addItem(icon);
             });
@@ -42,7 +43,7 @@ public class GameUtils {
     public void openKillEffectSelector(final Player player) {
         final Inventory menu = Bukkit.createInventory(null, 27, Utils.colorize("&bKill Effect Selector"));
         if (plugin.getSgPlayers().containsKey(player.getUniqueId())) {
-            plugin.getSgPlayers().get(player.getUniqueId()).getKillEffectsList().stream().filter(KillEffect::isEnabled).forEach(killEffect -> {
+            plugin.getKillEffectManager().getKillEffectSet().stream().filter(KillEffect::isEnabled).forEach(killEffect -> {
                 final ItemStack icon = Utils.createItem(killEffect.getIcon(), Utils.colorize(killEffect.getName()), 1);
                 menu.addItem(icon);
             });
@@ -52,10 +53,13 @@ public class GameUtils {
 
     public void giveGameInventory(final Player player) {
         player.setSaturation(20);
-        plugin.getSgPlayers().get(player.getUniqueId()).getKitList().stream().filter(Kit::isActive).forEach(kit -> {
-            final ItemStack[] kitItems = kit.getKitItems().stream().map(ItemStack::new).toArray(ItemStack[]::new);
-            player.getInventory().addItem(kitItems);
-        });
+        final SGPlayer sgPlayer = plugin.getSgPlayers().get(player.getUniqueId());
+        if(sgPlayer.getKit() != null) {
+            sgPlayer.getKit().getKitItems().forEach(item -> {
+                player.getInventory().addItem(item);
+            });
+        }
+
     }
 
 }

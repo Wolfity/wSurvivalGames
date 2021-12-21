@@ -5,6 +5,7 @@ C:\Users\yarin\Documents\GitHub\wSurvivalGames\src\main\java\me\wolf\wsurvivalga
 C:\Users\yarin\Documents\GitHub\wSurvivalGames\src\main\java\me\wolf\wsurvivalgames\utils\CustomLocation.java
 C:\Users\yarin\Documents\GitHub\wSurvivalGames\src\main\java\me\wolf\wsurvivalgames\files\YamlConfig.java
 C:\Users\yarin\Documents\GitHub\wSurvivalGames\src\main\java\me\wolf\wsurvivalgames\constants\Constants.java
+C:\Users\yarin\Documents\GitHub\wSurvivalGames\src\main\java\me\wolf\wsurvivalgames\killeffect\KillEffectManager.java
 C:\Users\yarin\Documents\GitHub\wSurvivalGames\src\main\java\me\wolf\wsurvivalgames\killeffect\KillEffect.java
 C:\Users\yarin\Documents\GitHub\wSurvivalGames\src\main\java\me\wolf\wsurvivalgames\listeners\EntityDamage.java
 C:\Users\yarin\Documents\GitHub\wSurvivalGames\src\main\java\me\wolf\wsurvivalgames\game\GameUtils.java
@@ -12,6 +13,7 @@ C:\Users\yarin\Documents\GitHub\wSurvivalGames\src\main\java\me\wolf\wsurvivalga
 C:\Users\yarin\Documents\GitHub\wSurvivalGames\src\main\java\me\wolf\wsurvivalgames\kits\Kit.java
 C:\Users\yarin\Documents\GitHub\wSurvivalGames\src\main\java\me\wolf\wsurvivalgames\arena\ArenaManager.java
 C:\Users\yarin\Documents\GitHub\wSurvivalGames\src\main\java\me\wolf\wsurvivalgames\listeners\BlockBreak.java
+C:\Users\yarin\Documents\GitHub\wSurvivalGames\src\main\java\me\wolf\wsurvivalgames\kits\KitManager.java
 C:\Users\yarin\Documents\GitHub\wSurvivalGames\src\main\java\me\wolf\wsurvivalgames\scoreboard\Scoreboard.java
 C:\Users\yarin\Documents\GitHub\wSurvivalGames\src\main\java\me\wolf\wsurvivalgames\listeners\PlayerQuit.java
 C:\Users\yarin\Documents\GitHub\wSurvivalGames\src\main\java\me\wolf\wsurvivalgames\listeners\FoodChange.java

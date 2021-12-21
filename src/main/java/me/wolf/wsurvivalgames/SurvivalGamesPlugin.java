@@ -8,6 +8,8 @@ import me.wolf.wsurvivalgames.files.FileManager;
 import me.wolf.wsurvivalgames.game.GameListeners;
 import me.wolf.wsurvivalgames.game.GameManager;
 import me.wolf.wsurvivalgames.game.GameUtils;
+import me.wolf.wsurvivalgames.killeffect.KillEffectManager;
+import me.wolf.wsurvivalgames.kits.KitManager;
 import me.wolf.wsurvivalgames.listeners.*;
 import me.wolf.wsurvivalgames.player.SGPlayer;
 import me.wolf.wsurvivalgames.scoreboard.Scoreboard;
@@ -31,6 +33,8 @@ public class SurvivalGamesPlugin extends JavaPlugin {
     private Scoreboard scoreboard;
     private GameUtils gameUtils;
     private FileManager fileManager;
+    private KillEffectManager killEffectManager;
+    private KitManager kitManager;
 
     private final Set<Arena> arenas = new HashSet<>();
     private final Map<UUID, SGPlayer> sgPlayers = new HashMap<>();
@@ -85,6 +89,11 @@ public class SurvivalGamesPlugin extends JavaPlugin {
         this.gameManager = new GameManager(this);
         this.scoreboard = new Scoreboard(this);
         this.gameUtils = new GameUtils(this);
+        this.kitManager = new KitManager(this);
+        this.killEffectManager = new KillEffectManager(this);
+
+        kitManager.loadKits();
+        killEffectManager.loadEffects();
 
     }
 

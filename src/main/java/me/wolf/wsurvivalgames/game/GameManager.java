@@ -42,6 +42,7 @@ public class GameManager {
                 break;
             case CAGES:
                 arena.setArenaState(ArenaState.GAMESPAWN);
+                plugin.getArenaManager().loadLoot(arena);
                 teleportToSpawns(arena);
                 cageTimer(arena);
                 break;
