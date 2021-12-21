@@ -1,6 +1,5 @@
 package me.wolf.wsurvivalgames.arena;
 
-import com.cryptomorin.xseries.XMaterial;
 import lombok.Getter;
 import lombok.Setter;
 import me.wolf.wsurvivalgames.SurvivalGamesPlugin;

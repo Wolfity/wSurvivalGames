@@ -289,7 +289,7 @@ public class GameManager {
                 }
                 if (arena.getArenaMembers().size() <= arena.getArenaConfig().getInt("max-players")) {
 
-                    plugin.getSgPlayers().put(player.getUniqueId(), new SGPlayer(player.getUniqueId(), plugin));
+                    plugin.getSgPlayers().put(player.getUniqueId(), new SGPlayer(player.getUniqueId()));
                     final SGPlayer sgPlayer = plugin.getSgPlayers().get(player.getUniqueId());
                     arena.getArenaMembers().add(sgPlayer);
 

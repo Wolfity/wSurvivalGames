@@ -3,7 +3,6 @@ package me.wolf.wsurvivalgames.game;
 import com.cryptomorin.xseries.XMaterial;
 import me.wolf.wsurvivalgames.SurvivalGamesPlugin;
 import me.wolf.wsurvivalgames.killeffect.KillEffect;
-import me.wolf.wsurvivalgames.kits.Kit;
 import me.wolf.wsurvivalgames.player.SGPlayer;
 import me.wolf.wsurvivalgames.utils.Utils;
 import org.bukkit.Bukkit;

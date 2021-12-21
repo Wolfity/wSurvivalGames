@@ -5,8 +5,6 @@ import me.wolf.wsurvivalgames.SurvivalGamesPlugin;
 import me.wolf.wsurvivalgames.arena.Arena;
 import me.wolf.wsurvivalgames.arena.ArenaState;
 import me.wolf.wsurvivalgames.constants.Constants;
-import me.wolf.wsurvivalgames.killeffect.KillEffect;
-import me.wolf.wsurvivalgames.kits.Kit;
 import me.wolf.wsurvivalgames.player.SGPlayer;
 import me.wolf.wsurvivalgames.utils.Utils;
 import org.bukkit.Bukkit;

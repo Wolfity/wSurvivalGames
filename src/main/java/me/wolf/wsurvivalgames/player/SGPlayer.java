@@ -2,7 +2,6 @@ package me.wolf.wsurvivalgames.player;
 
 import lombok.Data;
 import lombok.Setter;
-import me.wolf.wsurvivalgames.SurvivalGamesPlugin;
 import me.wolf.wsurvivalgames.killeffect.KillEffect;
 import me.wolf.wsurvivalgames.kits.Kit;
 
@@ -11,8 +10,6 @@ import java.util.UUID;
 
 @Data
 public class SGPlayer {
-
-    private final SurvivalGamesPlugin plugin;
 
 
     private UUID uuid;
@@ -24,8 +21,8 @@ public class SGPlayer {
     @Setter
     private KillEffect killEffect;
 
-    public SGPlayer(final UUID uuid, final SurvivalGamesPlugin plugin) {
-        this.plugin = plugin;
+    public SGPlayer(final UUID uuid) {
+
         this.uuid = uuid;
         this.kills = 0;
         this.isSpectator = false;
