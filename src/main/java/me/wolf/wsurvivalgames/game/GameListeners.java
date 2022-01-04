@@ -28,7 +28,7 @@ import org.bukkit.inventory.ItemStack;
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 
-@SuppressWarnings("ConstantConditions")
+
 public class GameListeners implements Listener {
 
     private final SurvivalGamesPlugin plugin;
@@ -40,40 +40,40 @@ public class GameListeners implements Listener {
     // this listener deals with if a player kills another player
     @EventHandler
     public void onKill(final EntityDamageByEntityEvent event) {
+        if (!(event.getEntity() instanceof Player && event.getDamager() instanceof Player)) return;
+        final SGPlayer sgKilled = plugin.getPlayerManager().getSGPlayer(event.getEntity().getUniqueId());
+        final SGPlayer sgKiller = plugin.getPlayerManager().getSGPlayer(event.getDamager().getUniqueId());
 
-        if (event.getEntity() instanceof Player && event.getDamager() instanceof Player) {
-            final Player killed = (Player) event.getEntity();
-            final Player killer = (Player) event.getDamager();
-            if (plugin.getSgPlayers().containsKey(killed.getUniqueId()) && plugin.getSgPlayers().containsKey(killer.getUniqueId())) {
-                final SGPlayer sgKilled = plugin.getSgPlayers().get(killed.getUniqueId());
-                final SGPlayer sgKiller = plugin.getSgPlayers().get(killer.getUniqueId());
-                final Arena arena = plugin.getArenaManager().getArenaByPlayer(sgKiller);
+        if (sgKilled == null || sgKiller == null) return;
 
-                if (event.getDamage() >= killed.getHealth()) {
-                    setSpectator(sgKilled);
-                    sendKillMessage(killer, killed, arena);
-                    sgKiller.incrementKills();
-                    applyKillEffect(killer);
 
-                    if (isLastAlive(arena)) {
-                        plugin.getGameManager().setGameState(GameState.END, arena);
-                    }
-                }
+        final Arena arena = plugin.getArenaManager().getArenaByPlayer(sgKiller);
+        if (arena == null) return;
+
+        if (event.getDamage() >= sgKilled.getHealth()) {
+            setSpectator(sgKilled);
+            sendKillMessage(sgKiller, sgKilled, arena);
+            sgKiller.incrementKills();
+            applyKillEffect(sgKiller.getBukkitPlayer());
+
+            if (isLastAlive(arena)) {
+                plugin.getGameManager().setGameState(GameState.END, arena);
             }
+
         }
     }
 
     // if a player dies by fall damage or any other natural deaths, set them to spectator as well
     @EventHandler
     public void onNaturalDeath(final PlayerDeathEvent event) {
-        final Player player = event.getEntity();
-        if (plugin.getSgPlayers().containsKey(player.getUniqueId())) {
-            final SGPlayer sgPlayer = plugin.getSgPlayers().get(player.getUniqueId());
-            final Arena arena = plugin.getArenaManager().getArenaByPlayer(sgPlayer);
-            setSpectator(sgPlayer);
-            if (isLastAlive(arena)) {
-                plugin.getGameManager().setGameState(GameState.END, arena);
-            }
+        final SGPlayer sgPlayer = plugin.getPlayerManager().getSGPlayer(event.getEntity().getUniqueId());
+        if (sgPlayer == null) return;
+        final Arena arena = plugin.getArenaManager().getArenaByPlayer(sgPlayer);
+        if (arena == null) return;
+        setSpectator(sgPlayer);
+
+        if (isLastAlive(arena)) {
+            plugin.getGameManager().setGameState(GameState.END, arena);
         }
     }
 
@@ -81,32 +81,34 @@ public class GameListeners implements Listener {
     // method for interacting with chests, if it hasn't been opened, add loot to it, and add it to a Set
     @EventHandler
     public void onChestOpen(final PlayerInteractEvent event) {
-        final Player player = event.getPlayer();
+        final SGPlayer sgPlayer = plugin.getPlayerManager().getSGPlayer(event.getPlayer().getUniqueId());
         final Action action = event.getAction();
-        if (plugin.getSgPlayers().containsKey(event.getPlayer().getUniqueId())) {
-            final SGPlayer sgPlayer = plugin.getSgPlayers().get(player.getUniqueId());
-            final Arena arena = plugin.getArenaManager().getArenaByPlayer(sgPlayer);
-            if (action == Action.RIGHT_CLICK_BLOCK) {
-                if (event.getClickedBlock().getState() instanceof Chest) {
-                    if (arena.getArenaState() == ArenaState.INGAME || arena.getArenaState() == ArenaState.GRACE) {
-                        final Chest chest = (Chest) event.getClickedBlock().getState();
-                        if (!arena.getOpenedChests().contains(chest.getLocation())) {
-                            arena.getOpenedChests().add(chest.getLocation());
-
-                            final Inventory chestInventory = (chest).getInventory();
-                            final Map<Material, Integer> tier1chestContents = plugin.getArenaManager().getArena(arena.getName()).getTier1ChestContents();
-                            final List<Material> tier1ChestMapKeys = new ArrayList<>(tier1chestContents.keySet());
-
-                            final Map<Material, Integer> tier2chestContents = plugin.getArenaManager().getArena(arena.getName()).getTier2ChestContents();
-                            final List<Material> tier2ChestMapKeys = new ArrayList<>(tier2chestContents.keySet());
+        if (event.getClickedBlock() == null) return;
+        if (sgPlayer == null) return;
+        final Arena arena = plugin.getArenaManager().getArenaByPlayer(sgPlayer);
+        if (arena == null) return;
 
 
-                            if (Utils.calculateChance(plugin.getConfig().getDouble("tier-2-chest-chance"))) {
-                                fillChests(tier2ChestMapKeys, tier2chestContents, chestInventory);
-                            } else {
-                                fillChests(tier1ChestMapKeys, tier1chestContents, chestInventory);
-                            }
-                        }
+        if (action == Action.RIGHT_CLICK_BLOCK) {
+            if (!(event.getClickedBlock().getState() instanceof Chest)) return;
+            if (arena.getArenaState() == ArenaState.INGAME || arena.getArenaState() == ArenaState.GRACE) {
+                final Chest chest = (Chest) event.getClickedBlock().getState();
+
+                if (!arena.getOpenedChests().contains(chest.getLocation())) {
+                    arena.getOpenedChests().add(chest.getLocation());
+
+                    final Inventory chestInventory = (chest).getInventory();
+                    final Map<Material, Integer> tier1chestContents = plugin.getArenaManager().getArena(arena.getName()).getTier1ChestContents();
+                    final List<Material> tier1ChestMapKeys = new ArrayList<>(tier1chestContents.keySet());
+
+                    final Map<Material, Integer> tier2chestContents = plugin.getArenaManager().getArena(arena.getName()).getTier2ChestContents();
+                    final List<Material> tier2ChestMapKeys = new ArrayList<>(tier2chestContents.keySet());
+
+
+                    if (Utils.calculateChance(plugin.getConfig().getDouble("tier-2-chest-chance"))) {
+                        fillChests(tier2ChestMapKeys, tier2chestContents, chestInventory);
+                    } else {
+                        fillChests(tier1ChestMapKeys, tier1chestContents, chestInventory);
                     }
                 }
             }
@@ -116,61 +118,62 @@ public class GameListeners implements Listener {
     // check if the player is in their spawn position, so they aren't able to move, until the game officially starts
     @EventHandler
     public void onSpawnPosState(final PlayerMoveEvent event) {
-        for (final Arena arena : plugin.getArenas()) {
-            if (arena.getArenaState() == ArenaState.GAMESPAWN) {
-                event.getPlayer().teleport(new Location(event.getPlayer().getWorld(), event.getFrom().getX(), event.getFrom().getY(), event.getFrom().getZ()));
-            }
+        final SGPlayer sgPlayer = plugin.getPlayerManager().getSGPlayer(event.getPlayer().getUniqueId());
+        if (sgPlayer == null) return;
+        final Arena arena = plugin.getArenaManager().getArenaByPlayer(sgPlayer);
+        if (arena == null) return;
+
+        if (arena.getArenaState() == ArenaState.GAMESPAWN) {
+            event.getPlayer().teleport(new Location(event.getPlayer().getWorld(), event.getFrom().getX(), event.getFrom().getY(), event.getFrom().getZ()));
+
         }
     }
 
     // The menus from kits and kill effects
     @EventHandler
     public void selectorMenu(final PlayerInteractEvent event) {
-        final Player player = event.getPlayer();
+        final SGPlayer sgPlayer = plugin.getPlayerManager().getSGPlayer(event.getPlayer().getUniqueId());
         final Action action = event.getAction();
+        if (sgPlayer == null) return;
+        final Arena arena = plugin.getArenaManager().getArenaByPlayer(sgPlayer);
+        if (arena == null) return;
 
-        for (final Arena arena : plugin.getArenas()) {
-            if (arena.getArenaState() == ArenaState.READY || arena.getArenaState() == ArenaState.GAMESPAWN || arena.getArenaState() == ArenaState.COUNTDOWN) {
-                if (player.getItemInHand().getType() == XMaterial.WOODEN_SWORD.parseMaterial()) {
-                    if (action == Action.RIGHT_CLICK_BLOCK || action == Action.RIGHT_CLICK_AIR) {
-                        plugin.getGameUtils().openKitSelector(player);
-                    }
-                } else if (player.getItemInHand().getType() == XMaterial.IRON_SWORD.parseMaterial()) {
-                    if (action == Action.RIGHT_CLICK_BLOCK || action == Action.RIGHT_CLICK_AIR) {
-                        plugin.getGameUtils().openKillEffectSelector(player);
-                    }
+        if (arena.getArenaState() == ArenaState.READY || arena.getArenaState() == ArenaState.GAMESPAWN || arena.getArenaState() == ArenaState.COUNTDOWN) {
+            if (event.getPlayer().getItemInHand().getType() == XMaterial.WOODEN_SWORD.parseMaterial()) {
+                if (action == Action.RIGHT_CLICK_BLOCK || action == Action.RIGHT_CLICK_AIR) {
+                    plugin.getGameUtils().openKitSelector(sgPlayer);
+                }
+            } else if (event.getPlayer().getItemInHand().getType() == XMaterial.IRON_SWORD.parseMaterial()) {
+                if (action == Action.RIGHT_CLICK_BLOCK || action == Action.RIGHT_CLICK_AIR) {
+                    plugin.getGameUtils().openKillEffectSelector(sgPlayer);
                 }
             }
+
         }
     }
 
     // the listener to check which kit/kill effect a player selects
     @EventHandler
     public void onMenuSelect(final InventoryClickEvent event) {
-        if (event.getCurrentItem() == null) {
-            return;
-        }
+        if (event.getCurrentItem() == null) return;
         if (event.getCurrentItem().getItemMeta() == null) return;
 
-        final Player player = (Player) event.getWhoClicked();
-        final ItemStack clicked = event.getCurrentItem();
-        final SGPlayer sgPlayer = plugin.getSgPlayers().get(player.getUniqueId());
-        if(sgPlayer == null) return;
+        final SGPlayer sgPlayer = plugin.getPlayerManager().getSGPlayer(event.getWhoClicked().getUniqueId());
+        if (sgPlayer == null) return;
         if (event.getView().getTitle().equalsIgnoreCase(Utils.colorize("&bKit Selector"))) {
-
             plugin.getKitManager().getKits().forEach(kit -> {
-                if(event.getCurrentItem().getType().equals(kit.getIcon())) {
+                if (event.getCurrentItem().getType().equals(kit.getIcon())) {
                     sgPlayer.setKit(kit);
-                    player.sendMessage(Constants.Messages.KIT_SELECTED.replace("{kit}", kit.getName()));
+                    sgPlayer.sendMessage(Constants.Messages.KIT_SELECTED.replace("{kit}", kit.getName()));
                 }
             });
 
             event.setCancelled(true);
         } else if (event.getView().getTitle().equalsIgnoreCase(Utils.colorize("&bKill Effect Selector"))) {
             plugin.getKillEffectManager().getKillEffectSet().forEach(killEffect -> {
-                if(event.getCurrentItem().getType().equals(killEffect.getIcon())) {
+                if (event.getCurrentItem().getType().equals(killEffect.getIcon())) {
                     sgPlayer.setKillEffect(killEffect);
-                    player.sendMessage(Constants.Messages.KILLEFFECT_SELECTED.replace("{killeffect}", killEffect.getName()));
+                    sgPlayer.sendMessage(Constants.Messages.KILLEFFECT_SELECTED.replace("{killeffect}", killEffect.getName()));
                 }
             });
 
@@ -194,16 +197,15 @@ public class GameListeners implements Listener {
     }
 
     // sending out the message that someone has been killed
-    private void sendKillMessage(final Player killer, final Player killed, final Arena arena) {
-        arena.getArenaMembers().stream().filter(Objects::nonNull).forEach(sgPlayer -> {
-            final Player player = Bukkit.getPlayer(sgPlayer.getUuid());
-            player.sendMessage(Utils.colorize("&b" + killed.getName() + " &2was killed by &b" + killer.getName()));
-        });
+    private void sendKillMessage(final SGPlayer killer, final SGPlayer killed, final Arena arena) {
+        arena.getArenaMembers().stream().filter(Objects::nonNull).forEach(sgPlayer -> sgPlayer.sendMessage(Utils.colorize("&b" + killed.getDisplayName() + " &2was killed by &b" + killer.getDisplayName())));
     }
 
     //setting a player to spectator mode
     private void setSpectator(final SGPlayer sgKilled) {
         final Player killed = Bukkit.getPlayer(sgKilled.getUuid());
+        if (killed == null) return;
+
         sgKilled.setSpectator(true);
         killed.setHealth(20);
         killed.setSaturation(20);
@@ -215,8 +217,8 @@ public class GameListeners implements Listener {
 
     // applies the selected killeffect after the killer killed a player
     private void applyKillEffect(final Player killer) {
-        final SGPlayer sgPlayer = plugin.getSgPlayers().get(killer.getUniqueId());
-        if(sgPlayer.getKillEffect() == null) return;
+        final SGPlayer sgPlayer = plugin.getPlayerManager().getSGPlayer(killer.getUniqueId());
+        if (sgPlayer.getKillEffect() == null) return;
         killer.addPotionEffect(sgPlayer.getKillEffect().getPotionEffect());
 
     }

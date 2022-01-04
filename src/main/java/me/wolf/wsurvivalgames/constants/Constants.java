@@ -4,6 +4,10 @@ import me.wolf.wsurvivalgames.utils.Utils;
 
 public class Constants {
 
+    private Constants() {
+
+    }
+
     public static class Messages {
         public static final String ADMIN_HELP = Utils.colorize(
                 "&7[-------&bSG &cAdmin &bHelp&7-------]\n" +
@@ -91,11 +95,11 @@ public class Constants {
                 "&aYou have been teleported to your spawn cages, the game will start soon!");
 
         public static final String GAME_ENDED = Utils.colorize(
-                "&a================================================================" +
-                        "&a=                          &a&lGame Ended!\n\n" +
-                        "&a=                             &7&lTop 3: \n" +
-                        "&a=                  &6Winner: {winner} - {kills} kills\n" +
-                        "&a================================================================\n\n\n" +
+                "&a=================================================" +
+                        "&a=                &a&lGame Ended!\n\n" +
+                        "&a=                 &7&lTop Player: \n" +
+                        "&a=         &6Winner: {winner} - {kills} kills\n" +
+                        "&a=================================================\n\n\n" +
                         "&2Players will be teleported out in 10 seconds!");
 
         public static final String CAGE_COUNTDOWN = Utils.colorize(
@@ -114,11 +118,6 @@ public class Constants {
         public static final String CHESTREFILL_HALFWAY = Utils.colorize("&c[GAME] &eChest refill will happen in {seconds} seconds!");
 
         public static final String CHESTREFILL = Utils.colorize("&a&lChests have been refilled!");
-
-    }
-
-
-    private Constants() {
 
     }
 }

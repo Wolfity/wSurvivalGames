@@ -18,8 +18,9 @@ public class PlayerQuit implements Listener {
     public void onQuit(final PlayerQuitEvent event) {
         final Player player = event.getPlayer();
 
-        if (plugin.getSgPlayers().containsKey(player.getUniqueId())) {
-            plugin.getGameManager().removePlayer(player);
-        }
+        if (plugin.getPlayerManager().getSGPlayer(player.getUniqueId()) == null) return;
+
+
+        plugin.getGameManager().removePlayer(player);
     }
 }

@@ -8,12 +8,12 @@ import org.bukkit.potion.PotionEffect;
 @Data
 public class KillEffect {
 
+    final PotionEffect potionEffect;
     private final String name;
     private final Material icon;
     private final boolean isEnabled;
     @Setter
     private boolean isActive;
-    final PotionEffect potionEffect;
 
     public KillEffect(final String name, final Material icon, final boolean isEnabled, final PotionEffect potionEffect) {
         this.name = name;

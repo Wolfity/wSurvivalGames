@@ -10,7 +10,7 @@ import org.bukkit.scoreboard.Objective;
 import org.bukkit.scoreboard.ScoreboardManager;
 import org.bukkit.scoreboard.Team;
 
-@SuppressWarnings("ConstantConditions")
+
 public class Scoreboard {
 
     private final SurvivalGamesPlugin plugin;
@@ -64,7 +64,8 @@ public class Scoreboard {
         final String name = arena.getName();
         final int currentPlayers = arena.getArenaMembers().size();
 
-        final SGPlayer sgPlayer = plugin.getSgPlayers().get(player.getUniqueId());
+        final SGPlayer sgPlayer = plugin.getPlayerManager().getSGPlayer(player.getUniqueId());
+        if (sgPlayer == null) return;
 
         final ScoreboardManager scoreboardManager = plugin.getServer().getScoreboardManager();
         org.bukkit.scoreboard.Scoreboard scoreboard = scoreboardManager.getNewScoreboard();

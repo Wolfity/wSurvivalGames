@@ -11,7 +11,7 @@ import org.bukkit.configuration.file.FileConfiguration;
 import java.io.File;
 import java.util.Objects;
 
-@SuppressWarnings("ConstantConditions")
+
 @Getter
 public final class ArenaManager {
 
@@ -27,19 +27,17 @@ public final class ArenaManager {
             if (arena.getName().equalsIgnoreCase(arenaName))
                 return getArena(arenaName);
         // Default values, can be modified in the arena config file
-        final Arena arena = new Arena(arenaName, 600, 10, 10, 30, 1, 5, 120, plugin);
 
-        arena.setGameTimer(arena.getArenaConfig().getInt("game-timer"));
-        arena.setLobbyCountdown(arena.getArenaConfig().getInt("lobby-countdown"));
-        arena.setChestRefill(arena.getArenaConfig().getInt("chest-refill"));
-        arena.setCageTimer(arena.getArenaConfig().getInt("cage-timer"));
-        arena.setGraceTimer(arena.getArenaConfig().getInt("grace-timer"));
+        final Arena arena = new Arena(arenaName, plugin, 600, 10, 10, 30, 2, 5, 60);
+
+
+        arena.createConfig();
 
 
         plugin.getArenas().add(arena);
         final World arenaWorld = Bukkit.createWorld(new WorldCreator(arenaName));
         arenaWorld.setAutoSave(false);
-        plugin.getArenas().add(arena);
+
         return arena;
     }
 
@@ -118,8 +116,15 @@ public final class ArenaManager {
 
         for (final File file : Objects.requireNonNull(folder.listFiles())) {
             final Arena arena = createArena(file.getName().replace(".yml", ""));
-
-            arena.setWaitingRoomLoc(CustomLocation.deserialize(arena.getArenaConfig().getString("LobbySpawn")));
+            final FileConfiguration cfg = arena.getArenaConfig();
+            arena.setWaitingRoomLoc(CustomLocation.fromBukkitLocation(new Location(
+                    Bukkit.getWorld(cfg.getString("LobbySpawn.world")),
+                            cfg.getDouble("LobbySpawn.x"),
+                            cfg.getDouble("LobbySpawn.y"),
+                            cfg.getDouble("LobbySpawn.z"),
+                            (float) cfg.getDouble("LobbySpawn.pitch"),
+                            (float) cfg.getDouble("LobbySpawn.yaw"))
+            ));
 
             for (final String key : arena.getArenaConfig().getConfigurationSection("spawn-locations").getKeys(false)) {
                 arena.addSpawnLocation(CustomLocation.deserialize(arena.getArenaConfig().getString("spawn-locations." + key)));
@@ -127,16 +132,26 @@ public final class ArenaManager {
 
             Bukkit.getLogger().info("&aLoaded arena &e" + arena.getName());
 
+            final int minPlayers = cfg.getInt("min-players");
+            final int maxPlayers = cfg.getInt("max-players");
+            final int cageTimer = cfg.getInt("cage-timer");
+            final int lobbyCountdown = cfg.getInt("lobby-countdown");
+            final int gameTimer = cfg.getInt("game-timer");
+            final int graceTimer = cfg.getInt("grace-timer");
+            final int chestRefill = cfg.getInt("chest-refill");
+
+            arena.setMinPlayer(minPlayers);
+            arena.setMaxPlayers(maxPlayers);
+            arena.setCageTimer(cageTimer);
+            arena.setLobbyCountdown(lobbyCountdown);
+            arena.setGameTimer(gameTimer);
+            arena.setGraceTimer(graceTimer);
+            arena.setChestRefill(chestRefill);
+
         }
 
     }
 
-    public void saveArenas() {
-        for (final Arena arena : plugin.getArenas()) {
-            arena.saveArena(arena.getName());
-        }
-
-    }
 
     private void deleteMap(File dir) {
         File[] files = dir.listFiles();

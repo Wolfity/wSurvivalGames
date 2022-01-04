@@ -2,6 +2,7 @@ package me.wolf.wsurvivalgames.commands.impl;
 
 import me.wolf.wsurvivalgames.SurvivalGamesPlugin;
 import me.wolf.wsurvivalgames.arena.Arena;
+import me.wolf.wsurvivalgames.arena.ArenaState;
 import me.wolf.wsurvivalgames.commands.BaseCommand;
 import me.wolf.wsurvivalgames.constants.Constants;
 import me.wolf.wsurvivalgames.game.GameState;
@@ -11,7 +12,8 @@ import org.bukkit.Location;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-@SuppressWarnings("ConstantConditions")
+import java.io.IOException;
+
 public class SGCommand extends BaseCommand {
 
     private final SurvivalGamesPlugin plugin;
@@ -70,9 +72,12 @@ public class SGCommand extends BaseCommand {
             if (args[0].equalsIgnoreCase("help")) {
                 tell(Constants.Messages.HELP);
             } else if (args[0].equalsIgnoreCase("join")) {
-                if (plugin.getArenaManager().getArena(arenaName) != null) {
-                    plugin.getGameManager().addPlayer(player, plugin.getArenaManager().getArena(arenaName));
-                }
+                final Arena arena = plugin.getArenaManager().getArena(arenaName);
+                if (arena != null) {
+                    if (arena.getArenaState() == ArenaState.READY) {
+                        plugin.getGameManager().addPlayer(player, plugin.getArenaManager().getArena(arenaName));
+                    } else tell("&cThis game is currently not available!");
+                } else tell("&cThis arena does not exist");
             }
         } else if (args.length == 1 && args[0].equalsIgnoreCase("leave")) {
             plugin.getGameManager().removePlayer(player);
@@ -82,8 +87,8 @@ public class SGCommand extends BaseCommand {
 
     // setting game spawns and saving them in the arena config
     private void setGameSpawn(final Player player, final String arenaName) {
-        if (plugin.getArenaManager().getArena(arenaName) != null) {
-            final Arena arena = plugin.getArenaManager().getArena(arenaName);
+        final Arena arena = plugin.getArenaManager().getArena(arenaName);
+        if (arena != null) {
             if (!plugin.getArenaManager().isGameActive(arena)) {
                 arena.getSpawnLocations().add(CustomLocation.fromBukkitLocation(player.getLocation()));
                 int i = 1;
@@ -91,8 +96,8 @@ public class SGCommand extends BaseCommand {
                     plugin.getArenaManager().getArena(arenaName).getArenaConfig().set("spawn-locations." + i, location.serialize());
                     i++;
                 }
+                saveConfig(arena);
                 tell(Constants.Messages.SET_GAME_SPAWN);
-                arena.saveArena(arenaName);
             } else {
                 tell(Constants.Messages.CAN_NOT_MODIFY);
             }
@@ -101,15 +106,25 @@ public class SGCommand extends BaseCommand {
 
     // setting an arena's waiting room lobby location
     private void setArenaLobby(final Player player, final String arenaName) {
-        if (plugin.getArenaManager().getArena(arenaName) != null) {
-            final Arena arena = plugin.getArenaManager().getArena(arenaName);
+        final Arena arena = plugin.getArenaManager().getArena(arenaName);
+        if (arena != null) {
             if (!plugin.getArenaManager().isGameActive(arena)) {
                 arena.getArenaConfig().set("LobbySpawn", player.getLocation().serialize());
                 arena.setWaitingRoomLoc(CustomLocation.fromBukkitLocation(player.getLocation()));
-                arena.saveArena(arenaName);
                 tell(Constants.Messages.SET_LOBBY_SPAWN);
+
+                saveConfig(arena);
+
             } else tell(Constants.Messages.CAN_NOT_MODIFY);
         } else tell(Constants.Messages.ARENA_NOT_FOUND);
+    }
+
+    private void saveConfig(final Arena arena) {
+        try {
+            arena.getArenaConfig().save(arena.getArenaConfigFile());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
 }

@@ -20,6 +20,7 @@ me\wolf\wsurvivalgames\utils\CustomLocation.class
 me\wolf\wsurvivalgames\commands\impl\SGCommand.class
 me\wolf\wsurvivalgames\exception\NotEnoughSpawnsException.class
 me\wolf\wsurvivalgames\player\SGPlayer.class
+me\wolf\wsurvivalgames\player\PlayerManager.class
 me\wolf\wsurvivalgames\game\GameUtils.class
 me\wolf\wsurvivalgames\listeners\PlayerQuit.class
 me\wolf\wsurvivalgames\game\GameManager$6.class

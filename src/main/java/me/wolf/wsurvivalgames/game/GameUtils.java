@@ -28,36 +28,36 @@ public class GameUtils {
         player.getInventory().setItem(4, Utils.createItem(XMaterial.IRON_SWORD.parseMaterial(), "&bClick To Select a Kill Effect", 1));
     }
 
-    public void openKitSelector(final Player player) {
+    public void openKitSelector(final SGPlayer player) {
         final Inventory menu = Bukkit.createInventory(null, 27, Utils.colorize("&bKit Selector"));
-        if (plugin.getSgPlayers().containsKey(player.getUniqueId())) {
-            plugin.getKitManager().getKits().forEach(kit -> {
-                final ItemStack icon = Utils.createItem(kit.getIcon(), Utils.colorize(kit.getDisplay()), 1);
-                menu.addItem(icon);
-            });
-            player.openInventory(menu);
-        }
+
+        plugin.getKitManager().getKits().forEach(kit -> {
+            final ItemStack icon = Utils.createItem(kit.getIcon(), Utils.colorize(kit.getDisplay()), 1);
+            menu.addItem(icon);
+        });
+        player.getBukkitPlayer().openInventory(menu);
+
     }
 
-    public void openKillEffectSelector(final Player player) {
+    public void openKillEffectSelector(final SGPlayer player) {
         final Inventory menu = Bukkit.createInventory(null, 27, Utils.colorize("&bKill Effect Selector"));
-        if (plugin.getSgPlayers().containsKey(player.getUniqueId())) {
-            plugin.getKillEffectManager().getKillEffectSet().stream().filter(KillEffect::isEnabled).forEach(killEffect -> {
-                final ItemStack icon = Utils.createItem(killEffect.getIcon(), Utils.colorize(killEffect.getName()), 1);
-                menu.addItem(icon);
-            });
-            player.openInventory(menu);
-        }
+        plugin.getKillEffectManager().getKillEffectSet().stream().filter(KillEffect::isEnabled).forEach(killEffect -> {
+            final ItemStack icon = Utils.createItem(killEffect.getIcon(), Utils.colorize(killEffect.getName()), 1);
+            menu.addItem(icon);
+        });
+
+        player.getBukkitPlayer().openInventory(menu);
+
     }
 
-    public void giveGameInventory(final Player player) {
-        player.setSaturation(20);
-        final SGPlayer sgPlayer = plugin.getSgPlayers().get(player.getUniqueId());
-        if(sgPlayer.getKit() != null) {
-            sgPlayer.getKit().getKitItems().forEach(item -> {
-                player.getInventory().addItem(item);
-            });
-        }
+    public void giveGameInventory(final SGPlayer player) {
+        player.getBukkitPlayer().setSaturation(20);
+        if (player.getKit() == null) return;
+
+        player.getKit().getKitItems().forEach(item -> {
+            player.getInventory().addItem(item);
+        });
+
 
     }
 

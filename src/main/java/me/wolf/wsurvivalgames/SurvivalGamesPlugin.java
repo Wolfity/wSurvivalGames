@@ -11,7 +11,7 @@ import me.wolf.wsurvivalgames.game.GameUtils;
 import me.wolf.wsurvivalgames.killeffect.KillEffectManager;
 import me.wolf.wsurvivalgames.kits.KitManager;
 import me.wolf.wsurvivalgames.listeners.*;
-import me.wolf.wsurvivalgames.player.SGPlayer;
+import me.wolf.wsurvivalgames.player.PlayerManager;
 import me.wolf.wsurvivalgames.scoreboard.Scoreboard;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
@@ -20,14 +20,17 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
 import java.lang.reflect.Field;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 @Getter
 public class SurvivalGamesPlugin extends JavaPlugin {
 
+    private final Set<Arena> arenas = new HashSet<>();
     @Getter
     private SurvivalGamesPlugin plugin;
-
     private ArenaManager arenaManager;
     private GameManager gameManager;
     private Scoreboard scoreboard;
@@ -35,10 +38,7 @@ public class SurvivalGamesPlugin extends JavaPlugin {
     private FileManager fileManager;
     private KillEffectManager killEffectManager;
     private KitManager kitManager;
-
-    private final Set<Arena> arenas = new HashSet<>();
-    private final Map<UUID, SGPlayer> sgPlayers = new HashMap<>();
-
+    private PlayerManager playerManager;
     private File folder;
 
     @Override
@@ -58,10 +58,6 @@ public class SurvivalGamesPlugin extends JavaPlugin {
         saveDefaultConfig();
     }
 
-    @Override
-    public void onDisable() {
-        arenaManager.saveArenas();
-    }
 
     private void registerCommands() {
         Collections.singletonList(
@@ -91,6 +87,7 @@ public class SurvivalGamesPlugin extends JavaPlugin {
         this.gameUtils = new GameUtils(this);
         this.kitManager = new KitManager(this);
         this.killEffectManager = new KillEffectManager(this);
+        this.playerManager = new PlayerManager();
 
         kitManager.loadKits();
         killEffectManager.loadEffects();

@@ -14,13 +14,12 @@ import java.util.Set;
 public class KillEffectManager {
 
     private final SurvivalGamesPlugin plugin;
-    public KillEffectManager(final SurvivalGamesPlugin plugin) {
-        this.plugin = plugin;
-    }
-
     @Getter
     private final Set<KillEffect> killEffectSet = new HashSet<>();
 
+    public KillEffectManager(final SurvivalGamesPlugin plugin) {
+        this.plugin = plugin;
+    }
 
     public void loadEffects() {
         final FileConfiguration killEffectCfg = plugin.getFileManager().getKilleffectsConfig().getConfig();
@@ -37,7 +36,6 @@ public class KillEffectManager {
 
         }
     }
-
 
 
 }

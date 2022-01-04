@@ -14,10 +14,12 @@ import java.util.stream.Collectors;
 public final class Utils {
 
 
+    private Utils() {
+    }
+
     public static String colorize(final String input) {
         return input == null ? "Null value" : ChatColor.translateAlternateColorCodes('&', input);
     }
-
 
     public static String[] colorize(String... messages) {
         String[] colorized = new String[messages.length];
@@ -44,9 +46,6 @@ public final class Utils {
 
     public static boolean calculateChance(final double chance) {
         return Math.random() * 100 < chance;
-    }
-
-    private Utils() {
     }
 
 }

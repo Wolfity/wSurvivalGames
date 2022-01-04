@@ -15,7 +15,6 @@ import org.bukkit.inventory.ItemStack;
 import java.util.ArrayList;
 import java.util.List;
 
-@SuppressWarnings("ConstantConditions")
 public class InventoryModify implements Listener {
 
     private final SurvivalGamesPlugin plugin;
@@ -26,33 +25,33 @@ public class InventoryModify implements Listener {
 
     @EventHandler
     public void onItemDrop(final PlayerDropItemEvent event) {
-        if (plugin.getSgPlayers().containsKey(event.getPlayer().getUniqueId())) {
-            final SGPlayer sgPlayer = plugin.getSgPlayers().get(event.getPlayer().getUniqueId());
-            final Arena arena = plugin.getArenaManager().getArenaByPlayer(sgPlayer);
-            if (arena.getArenaState() == ArenaState.COUNTDOWN || arena.getArenaState() == ArenaState.GAMESPAWN || arena.getArenaState() == ArenaState.READY) {
-                event.setCancelled(true);
-            }
-        }
+        final SGPlayer sgPlayer = plugin.getPlayerManager().getSGPlayer(event.getPlayer().getUniqueId());
+        if (sgPlayer == null) return;
+        final Arena arena = plugin.getArenaManager().getArenaByPlayer(sgPlayer);
+        if (arena == null) return;
+
+        event.setCancelled(arena.getArenaState() == ArenaState.COUNTDOWN || arena.getArenaState() == ArenaState.GAMESPAWN || arena.getArenaState() == ArenaState.READY);
+        // cancel if the arena state is either countdown, gamespawn or ready. (Players can only drop items ingame)
     }
 
     // not allowing players to move items in their inventory while in the following arena states
     @EventHandler
     public void onClick(final InventoryClickEvent event) {
-        if (event.getWhoClicked() instanceof Player) {
-            if (plugin.getSgPlayers().containsKey(event.getWhoClicked().getUniqueId())) {
-                final SGPlayer sgPlayer = plugin.getSgPlayers().get(event.getWhoClicked().getUniqueId());
-                final Arena arena = plugin.getArenaManager().getArenaByPlayer(sgPlayer);
-                if (arena.getArenaState() == ArenaState.COUNTDOWN || arena.getArenaState() == ArenaState.GAMESPAWN || arena.getArenaState() == ArenaState.READY) {
-                    final List<ItemStack> items = new ArrayList<>();
-                    items.add(event.getCurrentItem());
-                    items.add(event.getCursor());
-                    items.add((event.getClick() == ClickType.NUMBER_KEY) ?
-                            event.getWhoClicked().getInventory().getItem(event.getHotbarButton()) : event.getCurrentItem());
-                    for (ItemStack item : items) {
-                        if (item != null)
-                            event.setCancelled(true);
-                    }
-                }
+        if (!(event.getWhoClicked() instanceof Player)) return;
+        final SGPlayer sgPlayer = plugin.getPlayerManager().getSGPlayer(event.getWhoClicked().getUniqueId());
+        if (sgPlayer == null) return;
+        final Arena arena = plugin.getArenaManager().getArenaByPlayer(sgPlayer);
+        if (arena == null) return;
+
+        if (arena.getArenaState() == ArenaState.COUNTDOWN || arena.getArenaState() == ArenaState.GAMESPAWN || arena.getArenaState() == ArenaState.READY) {
+            final List<ItemStack> items = new ArrayList<>();
+            items.add(event.getCurrentItem());
+            items.add(event.getCursor());
+            items.add((event.getClick() == ClickType.NUMBER_KEY) ?
+                    event.getWhoClicked().getInventory().getItem(event.getHotbarButton()) : event.getCurrentItem());
+            for (final ItemStack item : items) {
+                if (item != null)
+                    event.setCancelled(true);
             }
         }
     }

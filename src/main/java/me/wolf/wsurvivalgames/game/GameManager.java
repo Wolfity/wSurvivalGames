@@ -17,17 +17,16 @@ import java.util.ArrayDeque;
 import java.util.Objects;
 import java.util.Queue;
 
-@SuppressWarnings("ConstantConditions")
+
 public class GameManager {
 
     private final SurvivalGamesPlugin plugin;
+    @Getter
+    private GameState gameState;
 
     public GameManager(final SurvivalGamesPlugin plugin) {
         this.plugin = plugin;
     }
-
-    @Getter
-    private GameState gameState;
 
     public void setGameState(final GameState gameState, final Arena arena) {
         this.gameState = gameState;
@@ -77,16 +76,12 @@ public class GameManager {
                 if (arena.getLobbyCountdown() > 0) {
                     arena.decrementLobbyCountdown();
                     arena.getArenaMembers().stream().filter(Objects::nonNull).forEach(sgPlayer -> {
-                        final Player player = Bukkit.getPlayer(sgPlayer.getUuid());
-                        player.sendMessage(Constants.Messages.LOBBY_COUNTDOWN.replace("{countdown}", String.valueOf(arena.getLobbyCountdown())));
+                        sgPlayer.sendMessage(Constants.Messages.LOBBY_COUNTDOWN.replace("{countdown}", String.valueOf(arena.getLobbyCountdown())));
                     });
                 } else {
                     this.cancel();
-                    arena.resetLobbyCountdownTimer();
-                    arena.getArenaMembers().forEach(sgPlayer -> {
-                        final Player player = Bukkit.getPlayer(sgPlayer.getUuid());
-                        player.sendMessage(Constants.Messages.GAME_WILL_START_SOON);
-                    });
+                    arena.setLobbyCountdown(arena.getArenaConfig().getInt("lobby-countdown"));
+                    arena.getArenaMembers().forEach(sgPlayer -> sgPlayer.sendMessage(Constants.Messages.GAME_WILL_START_SOON));
                     setGameState(GameState.CAGES, arena);
                 }
             }
@@ -106,11 +101,12 @@ public class GameManager {
                     arena.decrementGameTimer();
                     arena.getArenaMembers().
                             stream().
-                            filter(Objects::nonNull).forEach(sgPlayer -> plugin.getScoreboard().gameScoreboard(Bukkit.getPlayer(sgPlayer.getUuid()), arena));
+                            filter(Objects::nonNull).forEach(sgPlayer -> plugin.getScoreboard().gameScoreboard(sgPlayer.getBukkitPlayer(), arena));
                 } else {
                     this.cancel();
+                    arena.setGameTimer(arena.getArenaConfig().getInt("game-timer"));
                     setGameState(GameState.END, arena);
-                    arena.resetGameTimer();
+
                 }
             }
         }.runTaskTimer(plugin, 0L, 20L);
@@ -129,21 +125,20 @@ public class GameManager {
                     arena.getArenaMembers().
                             stream().
                             filter(Objects::nonNull).forEach(sgPlayer -> {
-                        final Player player = Bukkit.getPlayer(sgPlayer.getUuid());
-                        plugin.getScoreboard().gameScoreboard(player, arena);
-                        player.sendMessage(Constants.Messages.CAGE_COUNTDOWN.replace("{seconds}", String.valueOf(arena.getCageTimer())));
-                    });
+                                plugin.getScoreboard().gameScoreboard(sgPlayer.getBukkitPlayer(), arena);
+                                sgPlayer.sendMessage(Constants.Messages.CAGE_COUNTDOWN.replace("{seconds}", String.valueOf(arena.getCageTimer())));
+                            });
                 } else {
                     this.cancel();
                     arena.getArenaMembers().forEach(sgPlayer -> {
                         final Player player = Bukkit.getPlayer(sgPlayer.getUuid());
-                        player.sendMessage(Constants.Messages.GRACE_PERIOD.replace("{seconds}", String.valueOf(arena.getGraceTimer())));
+                        sgPlayer.sendMessage(Constants.Messages.GRACE_PERIOD.replace("{seconds}", String.valueOf(arena.getGraceTimer())));
 
                         player.getInventory().clear();
                         player.closeInventory();
                     });
                     setGameState(GameState.GRACE, arena);
-                    arena.resetCageTimer();
+                    arena.setCageTimer(arena.getArenaConfig().getInt("cage-timer"));
                 }
             }
         }.runTaskTimer(plugin, 0L, 20L);
@@ -161,12 +156,11 @@ public class GameManager {
                     this.cancel();
                     setGameState(GameState.ACTIVE, arena);
                     arena.getArenaMembers().forEach(sgPlayer -> {
-                        final Player player = Bukkit.getPlayer(sgPlayer.getUuid());
-                        player.sendMessage(Constants.Messages.GAME_STARTED);
-                        player.sendMessage(Constants.Messages.GRACE_PERIOD_END.replace("{seconds}", String.valueOf(arena.getChestRefill())));
-                        plugin.getGameUtils().giveGameInventory(player);
+                        sgPlayer.sendMessage(Constants.Messages.GAME_STARTED);
+                        sgPlayer.sendMessage(Constants.Messages.GRACE_PERIOD_END.replace("{seconds}", String.valueOf(arena.getChestRefill())));
+                        plugin.getGameUtils().giveGameInventory(sgPlayer);
                     });
-                    arena.resetGraceTimer();
+                    arena.setGraceTimer(arena.getArenaConfig().getInt("grace-timer"));
                 }
             }
         }.runTaskTimer(plugin, 0L, 20L);
@@ -174,63 +168,65 @@ public class GameManager {
 
     // checks whenever chests will be refilled
     private void chestRefillCheck(final Arena arena) {
-        if (gameState == GameState.ACTIVE) {
-            new BukkitRunnable() {
-                @Override
-                public void run() {
+
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                if (gameState == GameState.ACTIVE) {
                     if (arena.getChestRefill() > 0) {
                         arena.decrementChestRefillTimer();
-                        if (arena.getChestRefill() == arena.getArenaConfig().getInt("chest-refill") / 2) {
-                            arena.getArenaMembers().stream().filter(Objects::nonNull).forEach(sgPlayer -> {
-                                final Player player = Bukkit.getPlayer(sgPlayer.getUuid());
-                                player.sendMessage(Constants.Messages.CHESTREFILL_HALFWAY.replace("{seconds}",
-                                        String.valueOf(arena.getArenaConfig().getInt("chest-refill") / 2)));
-                            });
+                        if (arena.getChestRefill() == arena.getChestRefill() / 2) {
+                            arena.getArenaMembers().stream().filter(Objects::nonNull).forEach(sgPlayer ->
+                                    sgPlayer.sendMessage(Constants.Messages.CHESTREFILL_HALFWAY.replace("{seconds}",
+                                            String.valueOf(arena.getChestRefill() / 2))));
                         }
                     } else {
                         this.cancel();
                         arena.getArenaMembers().stream().filter(Objects::nonNull).forEach(sgPlayer -> {
-                            final Player player = Bukkit.getPlayer(sgPlayer.getUuid());
-                            player.sendMessage(Constants.Messages.CHESTREFILL);
+                            sgPlayer.sendMessage(Constants.Messages.CHESTREFILL);
                         });
                         arena.getOpenedChests().clear();
                     }
                 }
-            }.runTaskTimer(plugin, 0L, 20L);
-        }
+            }
+        }.runTaskTimer(plugin, 0L, 20L);
     }
+
 
     // handles everything in relation to ending the game, removing custom player objects, resetting their inventory, etc..
     private void endGame(final Arena arena) {
 
         arena.getArenaMembers().stream().filter(Objects::nonNull).forEach(sgPlayer -> {
 
-            final Player player = Bukkit.getPlayer(sgPlayer.getUuid());
-            player.getInventory().clear();
+            sgPlayer.getInventory().clear();
             teleportToWorld(arena);
+            // clearing inventory + changing gamemode
+            sgPlayer.getBukkitPlayer().getInventory().setArmorContents(null);
+            sgPlayer.getBukkitPlayer().setGameMode(GameMode.SURVIVAL);
 
-            player.getInventory().clear();
-            player.getInventory().setArmorContents(null);
-            player.setGameMode(GameMode.SURVIVAL);
+            plugin.getPlayerManager().removeSGPlayer(sgPlayer.getUuid());
 
-            plugin.getSgPlayers().remove(player.getUniqueId());
-
-            player.setScoreboard(Bukkit.getScoreboardManager().getNewScoreboard());
-            player.setPlayerListName(player.getName());
-            player.getActivePotionEffects().clear();
+            // setting scoreboard, playerlistname and clear active effects
+            sgPlayer.getBukkitPlayer().setScoreboard(Bukkit.getScoreboardManager().getNewScoreboard());
+            sgPlayer.getBukkitPlayer().setPlayerListName(sgPlayer.getDisplayName());
+            sgPlayer.getBukkitPlayer().getActivePotionEffects().clear();
 
             sgPlayer.setSpectator(false);
 
         });
-        arena.resetChestRefillTimer();
+        // resetting some timers
+        arena.setChestRefill(arena.getArenaConfig().getInt("chest-refill"));
+        arena.setGameTimer(arena.getArenaConfig().getInt("game-timer"));
         arena.getArenaMembers().clear();
-        setGameState(GameState.RECRUITING, arena);
     }
 
     // private unload the map
     private void resetMap(final Arena arena) {
-        Bukkit.unloadWorld(arena.getWaitingRoomLoc().toBukkitLocation().getWorld(), false);
+        Bukkit.unloadWorld(Objects.requireNonNull(arena.getWaitingRoomLoc().toBukkitLocation().getWorld()), false);
         final World arenaWorld = Bukkit.createWorld(new WorldCreator(arena.getName()));
+        if (arenaWorld == null) return;
+        Bukkit.getScheduler().runTaskLater(plugin, () -> setGameState(GameState.RECRUITING, arena), 150L); // after another 150 ticks, allow users to join (map is loaded again)
+
         arenaWorld.setAutoSave(false);
     }
 
@@ -240,11 +236,9 @@ public class GameManager {
             @Override
             public void run() {
                 if (gameState == GameState.RECRUITING) {
-                    if (arena.getArenaMembers().size() >= arena.getArenaConfig().getInt("min-players")) {
+                    if (arena.getArenaMembers().size() >= arena.getMinPlayer()) {
                         setGameState(GameState.LOBBY_COUNTDOWN, arena);
-                    } else {
-                        this.cancel();
-                    }
+                    } else this.cancel();
                 }
             }
         }.runTaskTimer(plugin, 0L, 20L);
@@ -253,10 +247,9 @@ public class GameManager {
     // after the game ends, players will be teleported back to the world spawn
     private void teleportToWorld(final Arena arena) {
         arena.getArenaMembers().forEach(sgPlayer -> {
-            final Player player = Bukkit.getPlayer(sgPlayer.getUuid());
             final Location worldLoc = (Location) plugin.getConfig().get("WorldSpawn");
-            player.teleport(worldLoc);
-            plugin.getSgPlayers().remove(player.getUniqueId());
+            sgPlayer.teleport(worldLoc);
+            plugin.getPlayerManager().removeSGPlayer(sgPlayer.getUuid());
         });
     }
 
@@ -267,11 +260,10 @@ public class GameManager {
     private void teleportToSpawns(final Arena arena) {
         final Queue<CustomLocation> remainingSpawns = new ArrayDeque<>(arena.getSpawnLocations());
         for (final SGPlayer sgPlayer : arena.getArenaMembers()) {
-            final Player player = Bukkit.getPlayer(sgPlayer.getUuid());
             if (arena.getArenaMembers().size() > arena.getSpawnLocations().size()) {
                 throw new NotEnoughSpawnsException("There are more players then spawn positions!");
             }
-            player.teleport(remainingSpawns.poll().toBukkitLocation());
+            sgPlayer.teleport(remainingSpawns.poll().toBukkitLocation());
         }
     }
 
@@ -281,29 +273,31 @@ public class GameManager {
 
     // Adds a new player to a specific arena, creates the Custom Player object.
     public void addPlayer(final Player player, final Arena arena) {
-
-        if (!plugin.getArenaManager().isGameActive(arena)) {
-            if (!arena.getArenaMembers().contains(plugin.getSgPlayers().get(player.getUniqueId()))) {
-                if (arena.getArenaMembers().isEmpty()) {
+        if (!plugin.getArenaManager().isGameActive(arena)) { // game isnt active
+            if (!arena.getArenaMembers().contains(plugin.getPlayerManager().getSGPlayer(player.getUniqueId()))) { // player is not in that arena
+                if (arena.getArenaMembers().isEmpty()) { // if the game is empty, set it it to recruiting
                     setGameState(GameState.RECRUITING, arena);
                 }
-                if (arena.getArenaMembers().size() <= arena.getArenaConfig().getInt("max-players")) {
 
-                    plugin.getSgPlayers().put(player.getUniqueId(), new SGPlayer(player.getUniqueId()));
-                    final SGPlayer sgPlayer = plugin.getSgPlayers().get(player.getUniqueId());
+                if (arena.getArenaMembers().size() <= arena.getMaxPlayers()) { // if the player limit hasn't been exceeded, allow to join
+
+                    plugin.getPlayerManager().createSGPlayer(player.getUniqueId());
+                    final SGPlayer sgPlayer = plugin.getPlayerManager().getSGPlayer(player.getUniqueId());
                     arena.getArenaMembers().add(sgPlayer);
 
+                    // set scoreboard, teleport and give the inventory
                     plugin.getScoreboard().lobbyScoreboard(player, arena);
                     teleportToLobby(player, arena);
                     plugin.getGameUtils().giveLobbyInventory(player);
 
                     arena.getArenaMembers().stream().filter(Objects::nonNull).forEach(arenaMembers -> {
-                        final Player arenaPlayers = Bukkit.getPlayer(arenaMembers.getUuid());
-                        plugin.getScoreboard().lobbyScoreboard(arenaPlayers, arena);
-                        arenaPlayers.sendMessage(Constants.Messages.PLAYER_JOINED_GAME.replace("{player}", player.getDisplayName()));
+                        plugin.getScoreboard().lobbyScoreboard(arenaMembers.getBukkitPlayer(), arena);
+                        arenaMembers.sendMessage(Constants.Messages.PLAYER_JOINED_GAME.replace("{player}", player.getDisplayName()));
                     });
+
                     enoughPlayers(arena);
-                    player.sendMessage(Constants.Messages.JOINED_ARENA.replace("{arena}", arena.getName()));
+                    sgPlayer.sendMessage(Constants.Messages.JOINED_ARENA.replace("{arena}", arena.getName()));
+
                 } else player.sendMessage(Constants.Messages.ARENA_IS_FULL);
             } else player.sendMessage(Constants.Messages.ALREADY_IN_ARENA);
         } else player.sendMessage(Constants.Messages.GAME_IN_PROGRESS);
@@ -311,45 +305,38 @@ public class GameManager {
 
     // remove a player from the game, teleport them, clear the custom player object
     public void removePlayer(final Player player) {
-        for (final Arena arena : plugin.getArenas()) {
-            if (arena.getArenaMembers().contains(plugin.getSgPlayers().get(player.getUniqueId()))) {
-                final SGPlayer sgPlayer = plugin.getSgPlayers().get(player.getUniqueId());
-                arena.getArenaMembers().remove(sgPlayer);
-                plugin.getSgPlayers().remove(player.getUniqueId());
+        final SGPlayer sgPlayer = plugin.getPlayerManager().getSGPlayer(player.getUniqueId());
+        final Arena arena = plugin.getArenaManager().getArenaByPlayer(sgPlayer);
+        if (sgPlayer == null) return;
+        if (arena != null) {
 
-                player.teleport((Location) plugin.getConfig().get("WorldSpawn"));
-                player.setScoreboard(Bukkit.getScoreboardManager().getNewScoreboard());
-                player.getInventory().clear();
-                player.sendMessage(Constants.Messages.LEFT_ARENA.replace("{arena}", arena.getName()));
+            arena.getArenaMembers().remove(sgPlayer);
+            plugin.getPlayerManager().removeSGPlayer(player.getUniqueId());
 
-                leaveGameCheck(arena);
-                arena.getArenaMembers()
-                        .stream().filter(Objects::nonNull)
-                        .forEach(arenaMember -> Bukkit.getPlayer(arenaMember.getUuid()).sendMessage(Constants.Messages.PLAYER_LEFT_GAME.replace("{player}", player.getDisplayName())));
-            } else player.sendMessage(Constants.Messages.NOT_IN_ARENA);
-        }
+            player.teleport((Location) Objects.requireNonNull(plugin.getConfig().get("WorldSpawn")));
+            player.setScoreboard(Bukkit.getScoreboardManager().getNewScoreboard());
+            player.getInventory().clear();
+            sgPlayer.sendMessage(Constants.Messages.LEFT_ARENA.replace("{arena}", arena.getName()));
+
+            leaveGameCheck(arena);
+            arena.getArenaMembers()
+                    .stream().filter(Objects::nonNull)
+                    .forEach(arenaMember -> arenaMember.sendMessage(Constants.Messages.PLAYER_LEFT_GAME.replace("{player}", player.getDisplayName())));
+
+        } else player.sendMessage(Constants.Messages.NOT_IN_ARENA);
     }
+
 
     // If someone leaves, check if there are any players left, else reset the game
     private void leaveGameCheck(final Arena arena) {
-        if (gameState == GameState.ACTIVE) {
+        if (gameState == GameState.ACTIVE || gameState == GameState.GRACE) {
             if (arena.getArenaMembers().size() <= 1) {
                 setGameState(GameState.END, arena);
                 resetTimers(arena);
             }
-        } else if (gameState == GameState.LOBBY_COUNTDOWN) {
+        } else if (gameState == GameState.LOBBY_COUNTDOWN || gameState == GameState.CAGES) {
             if (arena.getArenaMembers().size() <= 1) {
                 setGameState(GameState.RECRUITING, arena);
-                resetTimers(arena);
-            }
-        } else if (gameState == GameState.CAGES) {
-            if (arena.getArenaMembers().size() <= 1) {
-                setGameState(GameState.RECRUITING, arena);
-                resetTimers(arena);
-            }
-        } else if (gameState == GameState.GRACE) {
-            if (arena.getArenaMembers().size() <= 1) {
-                setGameState(GameState.END, arena);
                 resetTimers(arena);
             }
         }
@@ -358,16 +345,16 @@ public class GameManager {
     // sends the players who are in the arena the notification that the game has endedo
     private void sendGameEndNotification(final Arena arena) {
         arena.getArenaMembers().stream().filter(Objects::nonNull).forEach(sgPlayer -> {
-            final Player player = Bukkit.getPlayer(sgPlayer.getUuid());
-            player.sendMessage(Constants.Messages.GAME_ENDED.replace("{winner}", Bukkit.getPlayer(Utils.getWinner(arena).getUuid()).getDisplayName())
+            sgPlayer.sendMessage(Constants.Messages.GAME_ENDED.replace("{winner}", Utils.getWinner(arena).getDisplayName())
                     .replace("{kills}", String.valueOf(Utils.getWinner(arena).getKills())));
         });
     }
 
     private void resetTimers(final Arena arena) {
-        arena.resetChestRefillTimer();
-        arena.resetCageTimer();
-        arena.resetLobbyCountdownTimer();
-        arena.resetGameTimer();
+        arena.setGameTimer(arena.getArenaConfig().getInt("game-timer"));
+        arena.setCageTimer(arena.getArenaConfig().getInt("cage-timer"));
+        arena.setLobbyCountdown(arena.getArenaConfig().getInt("lobby-countdown"));
+        arena.setChestRefill(arena.getArenaConfig().getInt("chest-refill"));
+        arena.setGraceTimer(arena.getArenaConfig().getInt("grace-timer"));
     }
 }

@@ -17,15 +17,6 @@ public final class CustomLocation {
     private final float pitch;
     private final float yaw;
 
-    public Location toBukkitLocation() {
-        return new Location(Bukkit.getWorld(world), x, y, z, pitch, yaw);
-    }
-
-
-    public String serialize() {
-        return world + " " + x + " " + y + " " + z + " " + pitch + " " + yaw + " ";
-    }
-
     public static CustomLocation fromBukkitLocation(final Location location) {
         return new CustomLocation(location.getWorld().getName(),
                 location.getX(),
@@ -50,5 +41,13 @@ public final class CustomLocation {
 
 
         return new CustomLocation(worldName, x, y, z, pitch, yaw);
+    }
+
+    public Location toBukkitLocation() {
+        return new Location(Bukkit.getWorld(world), x, y, z, pitch, yaw);
+    }
+
+    public String serialize() {
+        return world + " " + x + " " + y + " " + z + " " + pitch + " " + yaw + " ";
     }
 }

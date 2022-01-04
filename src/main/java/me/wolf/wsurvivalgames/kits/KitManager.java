@@ -16,14 +16,12 @@ import java.util.Set;
 public class KitManager {
 
     private final SurvivalGamesPlugin plugin;
+    @Getter
+    private final Set<Kit> kits = new HashSet<>();
 
     public KitManager(final SurvivalGamesPlugin plugin) {
         this.plugin = plugin;
     }
-
-    @Getter
-    private final Set<Kit> kits = new HashSet<>();
-
 
     public void loadKits() {
         final FileConfiguration kitCfg = plugin.getFileManager().getKitsConfig().getConfig();
